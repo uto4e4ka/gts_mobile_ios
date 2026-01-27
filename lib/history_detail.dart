@@ -154,7 +154,7 @@ class _HistoryDetailsPageState extends State<HistoryDetailsPage> {
               child: Column(
                 children: [
                   _row(
-                    'Переработка: ${data.hover.toStringAsFixed(0)} ч',
+                    'Переработка: ${data.hover.toStringAsFixed(1)} ч',
                     '+${data.rover.toStringAsFixed(0)} ₽',
                   ),
                   _row('Коэффициент: ${data.k}', '${data.kValue} ₽'),

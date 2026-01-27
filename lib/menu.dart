@@ -235,7 +235,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                   ),
                   Visibility(
-                    visible: true,
+                    visible: false,
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       padding: const EdgeInsets.all(20),

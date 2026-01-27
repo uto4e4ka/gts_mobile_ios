@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:gts_mobile/authService.dart';
 import 'package:gts_mobile/dto/history_details.dart';
 import 'package:gts_mobile/dto/history_model.dart';
+import 'package:gts_mobile/dto/over_get.dart';
 import 'package:http/http.dart' as http;
 
 import 'dto/appointed_object.dart';
@@ -190,8 +191,9 @@ class WorkService {
 
   Future<HistoryModel> fetchHistory(String period) async {
     final response = await _request('GET', '/work/history/$period');
-
+    print("hist");
     if (response.statusCode == 200) {
+      print(response.body);
       return HistoryModel.fromJson(jsonDecode(response.body));
     }
     throw Exception(response.body);
@@ -204,7 +206,35 @@ class WorkService {
     );
 
     if (response.statusCode == 200) {
+      print(response.body);
       return HistoryDetails.fromJson(jsonDecode(response.body));
+    }
+    throw Exception(response.body);
+  }
+
+  Future<OverModel> fetchOver(int obj) async {
+    final response = await _request("GET", '/work/overWork/get?obj=$obj');
+    if (response.statusCode == 200) {
+      print(response.body);
+      return OverModel.fromJson(jsonDecode(response.body));
+    }
+    throw Exception(response.body);
+  }
+
+  Future<OverModel> setOver(
+    int obj,
+    double overWork,
+    int k,
+    String comment,
+  ) async {
+    final response = await _request(
+      'POST',
+      '/work/overWork/insert',
+      body: {"obj": obj, "overWork": overWork, "k": k, "comment": comment},
+    );
+    print(overWork);
+    if (response.statusCode == 200) {
+      return OverModel.fromJson(jsonDecode(response.body));
     }
     throw Exception(response.body);
   }

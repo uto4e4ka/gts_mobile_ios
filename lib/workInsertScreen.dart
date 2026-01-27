@@ -4,6 +4,7 @@ import 'package:gts_mobile/dto/today_work_response.dart';
 import 'package:gts_mobile/dto/work_category_response.dart';
 import 'package:gts_mobile/work_service.dart';
 import 'colors.dart';
+import 'dto/over_get.dart';
 
 class WorkInsertScreen extends StatefulWidget {
   final int objectId;
@@ -17,20 +18,17 @@ class WorkInsertScreen extends StatefulWidget {
 class _WorkInsertScreenState extends State<WorkInsertScreen>
     with SingleTickerProviderStateMixin {
   late bool isDark;
-
   late Future<WorkCategoryResponse> categoriesFuture;
   TabController? _tabController;
 
   final Map<int, Future<PriceWorksResponse>> priceFutures = {};
   late Future<TodayWorksResponse> workResponse;
-
   final Map<int, double> workCounts = {};
   String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-
     categoriesFuture = WorkService().fetchCategoryWork(1);
 
     categoriesFuture.then((catResp) {
@@ -73,12 +71,13 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
     await _loadWorkCounts();
   }
 
-  /// =================== ДИАЛОГ ===================
   void _showAdditionalInfoDialog() {
+    print("Opening Overtime Dialog for object ${widget.objectId}");
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _OvertimeDialog(isDark: isDark),
+      builder: (_) =>
+          _OvertimeDialog(isDark: isDark, objectId: widget.objectId),
     );
   }
 
@@ -101,9 +100,8 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
       body: FutureBuilder<WorkCategoryResponse>(
         future: categoriesFuture,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData)
             return const Center(child: CircularProgressIndicator());
-          }
 
           final categories = snapshot.data!.categories;
 
@@ -120,8 +118,6 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
                 ),
               ),
               const SizedBox(height: 20),
-
-              /// 🔍 ПОИСК + 💬
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
@@ -141,9 +137,8 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
                             hintText: 'Поиск',
                             border: InputBorder.none,
                           ),
-                          onChanged: (value) {
-                            setState(() => searchQuery = value.toLowerCase());
-                          },
+                          onChanged: (value) =>
+                              setState(() => searchQuery = value.toLowerCase()),
                         ),
                       ),
                     ),
@@ -166,7 +161,6 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
                   ],
                 ),
               ),
-
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -186,18 +180,16 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
     return FutureBuilder<PriceWorksResponse>(
       future: priceFutures[catId],
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (!snapshot.hasData)
           return const Center(child: CircularProgressIndicator());
-        }
 
         final works = snapshot.data!.priceWorks;
         final filteredWorks = works
             .where((w) => w.name.toLowerCase().contains(searchQuery))
             .toList();
 
-        if (filteredWorks.isEmpty) {
+        if (filteredWorks.isEmpty)
           return const Center(child: Text('Ничего не найдено'));
-        }
 
         return RefreshIndicator(
           onRefresh: _refreshCurrentTab,
@@ -245,12 +237,13 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
   }
 }
 
-/// =================== DIALOG ===================
+/// =================== OVERTIME DIALOG ===================
 
 class _OvertimeDialog extends StatefulWidget {
   final bool isDark;
+  final int objectId;
 
-  const _OvertimeDialog({required this.isDark});
+  const _OvertimeDialog({required this.isDark, required this.objectId});
 
   @override
   State<_OvertimeDialog> createState() => _OvertimeDialogState();
@@ -260,9 +253,69 @@ class _OvertimeDialogState extends State<_OvertimeDialog> {
   double hours = 0.0;
   bool isDayOff = false;
   final TextEditingController commentController = TextEditingController();
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOvertime();
+  }
+
+  Future<void> _loadOvertime() async {
+    print("Loading overtime for object ${widget.objectId}");
+    try {
+      final overModel = await WorkService().fetchOver(widget.objectId);
+      print("OverModel received: $overModel");
+      setState(() {
+        hours = overModel.over;
+        isDayOff = overModel.k != 1;
+        commentController.text = overModel.comment ?? '';
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Failed to fetch over: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _saveOvertime() async {
+    setState(() => isLoading = true);
+    try {
+      final k = isDayOff ? 2 : 1;
+      print("Saving overtime: hours=$hours, k=$k");
+      await WorkService().setOver(
+        widget.objectId,
+        hours.toDouble(),
+        k,
+        commentController.text,
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      print("Failed to save overtime: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(30),
+          child: SizedBox(
+            height: 60,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ),
+      );
+    }
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
@@ -303,11 +356,7 @@ class _OvertimeDialogState extends State<_OvertimeDialog> {
             ),
             CheckboxListTile(
               value: isDayOff,
-              onChanged: (v) {
-                setState(() {
-                  isDayOff = v ?? false;
-                });
-              },
+              onChanged: (v) => setState(() => isDayOff = v ?? false),
               title: const Text('Выходной'),
             ),
             TextField(
@@ -319,7 +368,7 @@ class _OvertimeDialogState extends State<_OvertimeDialog> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _saveOvertime,
                 child: const Text('Сохранить'),
               ),
             ),

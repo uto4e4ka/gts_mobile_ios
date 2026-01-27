@@ -41,13 +41,13 @@ class HistoryItem {
   final int objId;
   final String objectName;
   final double sum;
-  final List<CategoryWork> categoryWorkList;
+  //final List<CategoryWork> categoryWorkList;
 
   HistoryItem({
     required this.objId,
     required this.objectName,
     required this.sum,
-    required this.categoryWorkList,
+    //required this.categoryWorkList,
   });
 
   factory HistoryItem.fromJson(int objId, Map<String, dynamic> json) {
@@ -55,9 +55,9 @@ class HistoryItem {
       objId: objId,
       objectName: json['objectName'] as String,
       sum: (json['sum'] ?? 0).toDouble(),
-      categoryWorkList: (json['categoryWorkList'] as List)
-          .map((e) => CategoryWork.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      //  categoryWorkList: (json['categoryWorkList'] as List)
+      //   .map((e) => CategoryWork.fromJson(e as Map<String, dynamic>))
+      //   .toList(),
     );
   }
 
@@ -65,7 +65,7 @@ class HistoryItem {
     return {
       'objectName': objectName,
       'sum': sum,
-      'categoryWorkList': categoryWorkList.map((e) => e.toJson()).toList(),
+      //  'categoryWorkList': categoryWorkList.map((e) => e.toJson()).toList(),
     };
   }
 }

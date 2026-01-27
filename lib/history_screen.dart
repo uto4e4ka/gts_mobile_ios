@@ -126,19 +126,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 children: [
                   /// Категории
                   Row(
-                    children: item.categoryWorkList
-                        .map(
-                          (_) => Container(
-                            margin: const EdgeInsets.only(right: 4),
-                            width: 12,
-                            height: 12,
-                            decoration: const BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    // children: item.categoryWorkList
+                    //     .map(
+                    //       (_) => Container(
+                    //         margin: const EdgeInsets.only(right: 4),
+                    //         width: 12,
+                    //         height: 12,
+                    //         decoration: const BoxDecoration(
+                    //           color: Colors.blue,
+                    //           shape: BoxShape.circle,
+                    //         ),
+                    //       ),
+                    //     )
+                    //     .toList(),
                   ),
 
                   const SizedBox(width: 8),
