@@ -14,8 +14,10 @@ class _WorkChooseObjectPageState extends State<WorkChooseObjectPage>
     with SingleTickerProviderStateMixin {
   List<AppointedObject> _objects = [];
   bool _isLoading = true;
-
   late bool isDark;
+
+  // Индекс выбранного Tab
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
@@ -72,6 +74,11 @@ class _WorkChooseObjectPageState extends State<WorkChooseObjectPage>
                 isScrollable: true,
                 indicatorColor: isDark ? DarkColors.app : LightColors.app,
                 labelColor: isDark ? DarkColors.app : LightColors.app,
+                onTap: (index) {
+                  setState(() {
+                    _currentTabIndex = index; // Сохраняем выбранный Tab
+                  });
+                },
                 tabs: const [
                   Tab(text: "Газ"),
                   Tab(text: "Бассейны"),
@@ -96,6 +103,7 @@ class _WorkChooseObjectPageState extends State<WorkChooseObjectPage>
     );
   }
 
+  /// Строим список объектов с RefreshIndicator
   Widget _buildList() {
     return RefreshIndicator(
       onRefresh: _loadObjects,
@@ -116,7 +124,10 @@ class _WorkChooseObjectPageState extends State<WorkChooseObjectPage>
                     Navigator.pushNamed(
                       context,
                       '/insert_work',
-                      arguments: obj.object.id,
+                      arguments: {
+                        'objectId': obj.object.id,
+                        'category': _currentTabIndex + 1, // Передаем индекс Tab
+                      },
                     );
                   },
                 );
@@ -155,12 +166,12 @@ class ObjectCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         onTap: onTap,
 
-        /// ---- Затемнение при клике ----
+        /// Затемнение при клике
         highlightColor: (isDark ? Colors.white : Colors.black).withOpacity(
           0.15,
         ),
 
-        /// Можно включить слабый ripple (по желанию)
+        /// Слабый ripple
         splashColor: (isDark ? Colors.white : Colors.black).withOpacity(0.12),
 
         child: Container(
@@ -178,7 +189,6 @@ class ObjectCard extends StatelessWidget {
                 ),
             ],
           ),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -195,9 +205,7 @@ class ObjectCard extends StatelessWidget {
                   ),
                 ],
               ),
-
               const SizedBox(height: 10),
-
               Row(
                 children: [
                   Text(
@@ -207,9 +215,7 @@ class ObjectCard extends StatelessWidget {
                       color: isDark ? DarkColors.text : LightColors.text,
                     ),
                   ),
-
                   const SizedBox(width: 5),
-
                   Text(
                     expireValue,
                     style: TextStyle(
@@ -219,9 +225,7 @@ class ObjectCard extends StatelessWidget {
                           : LightColors.positive,
                     ),
                   ),
-
                   const Spacer(),
-
                   if (isBind)
                     Icon(
                       Icons.done,

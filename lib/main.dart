@@ -51,10 +51,13 @@ class MyApp extends StatelessWidget {
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/insert_work') {
-          final objectId = settings.arguments as int;
+          final args = settings.arguments as Map<String, dynamic>;
+          final objectId = args['objectId'] as int;
+          final category = args['category'] as int;
 
           return MaterialPageRoute(
-            builder: (_) => WorkInsertScreen(objectId: objectId),
+            builder: (_) =>
+                WorkInsertScreen(objectId: objectId, category: category),
           );
         }
         return null;

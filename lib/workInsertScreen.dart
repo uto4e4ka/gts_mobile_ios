@@ -8,8 +8,13 @@ import 'dto/over_get.dart';
 
 class WorkInsertScreen extends StatefulWidget {
   final int objectId;
+  final int category;
 
-  const WorkInsertScreen({super.key, required this.objectId});
+  const WorkInsertScreen({
+    super.key,
+    required this.objectId,
+    required this.category,
+  });
 
   @override
   State<WorkInsertScreen> createState() => _WorkInsertScreenState();
@@ -29,7 +34,7 @@ class _WorkInsertScreenState extends State<WorkInsertScreen>
   @override
   void initState() {
     super.initState();
-    categoriesFuture = WorkService().fetchCategoryWork(1);
+    categoriesFuture = WorkService().fetchCategoryWork(widget.category);
 
     categoriesFuture.then((catResp) {
       _tabController = TabController(
