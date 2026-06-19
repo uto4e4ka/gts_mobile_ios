@@ -142,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fillColor: isDark
                           ? DarkColors.secondary
                           : LightColors.secondary,
-                      hintText: 'Email',
+                      hintText: 'Логин',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

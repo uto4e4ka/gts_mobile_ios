@@ -5,6 +5,9 @@ import 'package:gts_mobile/dto/history_model.dart';
 import 'package:gts_mobile/dto/over_get.dart';
 import 'package:http/http.dart' as http;
 
+// 🔑 Импортируем глобальный навигатор из вашего файла main.dart
+import 'package:gts_mobile/main.dart';
+
 import 'dto/appointed_object.dart';
 import 'dto/price_work_response.dart';
 import 'dto/today_work_response.dart';
@@ -25,6 +28,8 @@ class WorkService {
     String? token = await AuthService.getAccessToken();
 
     if (token == null) {
+      // Если токена изначально нет, сразу отправляем на логин
+      _redirectToLogin();
       throw Exception("User not authorized");
     }
 
@@ -54,13 +59,29 @@ class WorkService {
     // 🔁 access token expired
     if (response.statusCode == 401) {
       token = await AuthService.refreshToken();
+
+      // ❌ Сбой рефреша токена — выкидываем на страницу входа
       if (token == null) {
+        _redirectToLogin();
         throw Exception("Session expired");
       }
+
       response = await send(token);
     }
 
     return response;
+  }
+
+  /// Вспомогательный метод для очистки данных и редиректа
+  void _redirectToLogin() {
+    // 1. Очищаем сохраненные токены/сессию, чтобы избежать зацикливания запросов
+    AuthService.logout();
+
+    // 2. Сбрасываем стек навигации и открываем экран '/login'
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+      (route) => false, // Удаляет все предыдущие экраны из истории
+    );
   }
 
   /// ===============================
@@ -164,6 +185,7 @@ class WorkService {
     throw Exception(response.body);
   }
 
+  // 🛠️ СИНТАКСИС ИСПРАВЛЕН ЗДЕСЬ
   Future<WorkAddResponse> setWork(
     int category,
     int obj,

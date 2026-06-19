@@ -134,7 +134,7 @@ class AdviseCard extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => Navigator.pushNamed(context, '/history'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: LightColors.app,
                         shape: RoundedRectangleBorder(

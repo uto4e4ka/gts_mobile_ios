@@ -4,10 +4,12 @@ import 'package:gts_mobile/history_detail.dart';
 import 'package:gts_mobile/history_screen.dart';
 import 'package:gts_mobile/login.dart';
 import 'package:gts_mobile/menu.dart';
-
 import 'package:gts_mobile/transport_trip.dart';
 import 'package:gts_mobile/workChoose.dart';
 import 'package:gts_mobile/workInsertScreen.dart';
+
+// 🔑 1. Объявляем глобальный ключ для навигации без BuildContext
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   runApp(const MyApp());
@@ -19,9 +21,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // 🔑 2. Передаем ключ в MaterialApp, чтобы Flutter связал его с навигатором
+      navigatorKey: navigatorKey,
+
       debugShowCheckedModeBanner: false,
 
-      // Темы (можешь менять цвета)
+      // Темы
       theme: ThemeData(
         brightness: Brightness.dark,
         appBarTheme: const AppBarTheme(
@@ -40,7 +45,7 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      themeMode: ThemeMode.light, // Автоматически светлая/темная
+      themeMode: ThemeMode.light,
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginScreen(),

@@ -5,6 +5,9 @@ import 'package:gts_mobile/dto/transport_trip.dart';
 import 'package:gts_mobile/dto/work_object.dart';
 import 'package:http/http.dart' as http;
 
+// 🔑 Импортируем глобальный навигатор из вашего файла main.dart
+import 'package:gts_mobile/main.dart';
+
 import 'dto/appointed_object.dart';
 import 'dto/price_work_response.dart';
 import 'dto/today_work_response.dart';
@@ -25,6 +28,8 @@ class FuelService {
     String? token = await AuthService.getAccessToken();
 
     if (token == null) {
+      // Если токена нет изначально — сразу отправляем на авторизацию
+      _redirectToLogin();
       throw Exception("User not authorized");
     }
 
@@ -54,13 +59,29 @@ class FuelService {
     // 🔁 access token expired
     if (response.statusCode == 401) {
       token = await AuthService.refreshToken();
+
+      // ❌ Сбой рефреша токена — выкидываем на логин
       if (token == null) {
+        _redirectToLogin();
         throw Exception("Session expired");
       }
+
       response = await send(token);
     }
 
     return response;
+  }
+
+  /// Вспомогательный метод для очистки данных и редиректа
+  void _redirectToLogin() {
+    // 1. Очищаем сохраненную сессию, чтобы предотвратить бесконечные циклы запросов
+    AuthService.logout();
+
+    // 2. Сбрасываем стек навигации и открываем экран '/login' без возможности вернуться назад
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+      (route) => false,
+    );
   }
 
   /// ===============================
@@ -80,7 +101,7 @@ class FuelService {
 
   Future<List<Transport>> fetchTransport() async {
     final response = await _request('GET', '/fuel/transport');
-
+    print(response);
     if (response.statusCode == 200) {
       final jsonMap = jsonDecode(response.body);
       final List list = jsonMap['transports'];
